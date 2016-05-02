@@ -14,6 +14,7 @@
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"/>
     <script src="js/modernizr.custom.js"></script>
 
 </head>
@@ -49,9 +50,28 @@
     <header id="top" class="header">
         <!-- Map -->
         <section  class="map">
-            <script type="text/javascript">
-                        var markers = [
-                        <?php 
+               <script
+        src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js">
+    </script>
+
+  
+
+<div id="map"</div>
+        <script>
+            var map = L.map('map').setView([-0.789275, 113.92132700000002], 5);
+        mapLink = 
+            '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+        L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; ' + mapLink + ' Contributors',
+            maxZoom: 18,
+            }).addTo(map);
+            var LeafIcon = L.Icon;
+
+            var konek = new LeafIcon({iconUrl: "img/konek.png",iconAnchor: [13, 39],popupAnchor: [0, -33]}),
+                fail = new LeafIcon({iconUrl: "img/fail.png",iconAnchor: [13, 39],popupAnchor: [0, -33]});
+                
+            <?php 
                         include "koneksi.php";  
                         $sql="SELECT * FROM router ";
                         $qry=mysql_query($sql);
@@ -63,93 +83,33 @@
                         $cabang     =$data['cabang'];
                         $ip         =$data['ip'];
                         $keterangan  =$data['keterangan'];
-                        ?>
-                        
-                        {
-                            "title": <?php echo "'$lokasi'"; ?>,
-                            "lat": <?php echo "'$lat'"; ?>,
-                            "lng": <?php echo "'$lng'"; ?>,
-                            "draggable":'true',
-                            "description": <?php echo "'$lokasi $ip $keterangan'"; ?>,
-                        },
+                        ?>    
+            
+            // L.marker([<?php echo "$lat"; ?>, <?php echo "$lng"; ?>]).bindPopup('<?php echo "$ip"; ?>').addTo(map);
 
-                        <?php } ?>
-                        ];
-                        window.onload = function () {
-                            LoadMap();
-                        }
-                        function LoadMap() {
+        <?php 
+        exec("ping -t 1 " . $ip, $output, $result);
 
-                            var myLatLng = {lat: -0.789275, lng: 113.92132700000002};
-                            var mapOptions = {
-                                center: myLatLng,
-                                zoom: 5,
-                                mapTypeId: google.maps.MapTypeId.ROADMAP
-                            };
+        if ($result == 0)
 
-                            var map = new google.maps.Map(document.getElementById("dvMap"), mapOptions);
-                            // Define a symbol using SVG path notation, with an opacity of 1.
-                            var lineSymbol = {
-                                path: 'M 0,-1 0,1',
-                                strokeOpacity: 1,
-                                scale: 2
-                                };
-                            // Create the polyline, passing the symbol in the 'icons' property.
-                            // Give the line an opacity of 0.
-                            // Repeat the symbol at intervals of 20 pixels to create the dashed effect.
-                            var line = new google.maps.Polyline({
-                                path: [<?php 
-                                    include "koneksi.php";
-                                    $sql="SELECT * FROM router ";
-                                    $qry=mysql_query($sql);
-                                    while ($data=mysql_fetch_array($qry)) {
-                                    $lokasi     =$data['lokasi'];
-                                    $lat        =$data['lat'];
-                                    $lng        =$data['lng'];
-                                    $cabang     =$data['cabang'];
-                                    
-                                    ?>
-                                     {lat: <?php echo "$lat"; ?>, lng: <?php echo "$lng"; ?>},
-                                     <?php echo "$cabang"; ?>
-                                     <?php } ?>],
+        echo  "L.marker([$lat, $lng],{icon:konek}).bindPopup('$ip <br> $keterangan').addTo(map);";
+        else
+        echo  "L.marker([$lat, $lng],{icon:fail}).bindPopup('$ip <br> $keterangan').addTo(map);";
+        ?>
 
-                                    strokeColor:'red',                          
-                                    strokeOpacity: 0,
-                                    icons: [{
-                                      icon: lineSymbol,
-                                      offset: '0',
-
-                                      repeat: '20px'
-                                    }],
-                                      map: map
-                                  });
-  
-                            //Create and open InfoWindow ganti icon dan animasi.
-                            var infoWindow = new google.maps.InfoWindow();
-
-                            for (var i = 0; i < markers.length; i++) {
-                                var data = markers[i];
-                                var myLatlng = new google.maps.LatLng(data.lat, data.lng);
-                                var marker = new google.maps.Marker({
-                                    position: myLatlng,
-                                    map: map,
-                                    icon:'img/pin2.png',
-                                    title: data.title
-                                });
-
-                                //Attach click event to the marker.
-                                (function (marker, data) {
-                                    google.maps.event.addListener(marker, "click", function (e) {
-                                        //Wrap the content inside an HTML DIV in order to set height and width of InfoWindow.
-                                        infoWindow.setContent("<div class=' marker'>" + data.description + "</div>");
-                                        infoWindow.open(map, marker);
-                                    });
-                                })(marker, data);
-                            }
-                        }
-                    </script>
-                    <div id="dvMap">
-                    </div>
+             var polyline = L.polyline([
+            [<?php echo "$lat"; ?>, <?php echo "$lng"; ?>],[<?php echo "$cabang"; ?>],],
+            {
+                color: 'green',
+                weight: 2,
+                opacity: .7,
+                lineJoin: 'round'
+            }
+            ).addTo(map);
+             <?php } ?>
+            
+        </script>
+                    
         </section>
     </header>
 
@@ -255,7 +215,7 @@
                                     </div>
                                     
                                        <select class="lol"  name="cabang">
-                                          <option value="" disabled selected>Choose your option</option>
+                                          <option value="" disabled selected>Cabang Dari</option>
                                             <?php                                    
                                             include "koneksi.php";
                                             $sql="SELECT * FROM router ORDER BY lokasi ASC";
@@ -265,7 +225,7 @@
                                             $lat     =$data['lat'];
 
                                             ?>
-                                           <option value="{<?php echo "lat: $lat, lng: $lng";?>},"><?php echo "$lokasi";?></option>
+                                           <option value="<?php echo "$lat, $lng";?>"><?php echo "$lokasi";?></option>
 
                                             <?php } ?>
                                           

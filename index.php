@@ -56,7 +56,7 @@
 
   
 
-<div id="map"</div>
+    <div id="map"></div>
         <script>
             var map = L.map('map').setView([-0.789275, 113.92132700000002], 5);
         mapLink = 
